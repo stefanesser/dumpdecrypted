@@ -63,7 +63,7 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 	lc = (struct load_command *)((unsigned char *)pvars->mh + sizeof(struct mach_header));
 		
 	for (i=0; i<pvars->mh->ncmds; i++) {
-		printf("Load Command (%d): %08x @ %p\n", i, lc->cmd, lc);
+		/*printf("Load Command (%d): %08x\n", i, lc->cmd);*/
 		
 		if (lc->cmd == LC_ENCRYPTION_INFO) {
 			eic = (struct encryption_info_command *)lc;
