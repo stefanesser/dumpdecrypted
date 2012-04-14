@@ -52,7 +52,7 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 	struct mach_header *mh;
 	char buffer[1024];
 	char rpath[4096],npath[4096]; /* should be big enough for PATH_MAX */
-	unsigned int fileoffs = 0, restsize;
+	unsigned int fileoffs = 0, off_cryptid = 0, restsize;
 	int i,fd,outfd,r,n,toread;
 	char *tmp;
 	
@@ -72,7 +72,9 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 			if (eic->cryptid == 0) {
 				break;
 			}
-			
+			off_cryptid=(off_t)((void*)&eic->cryptid - (void*)pvars->mh);
+			printf("[+] offset to cryptid found: @%p(from %p) = %x\n", &eic->cryptid, pvars->mh, off_cryptid);
+
 			printf("[+] Found encrypted data at address %08x of length %u bytes - type %u.\n", eic->cryptoff, eic->cryptsize, eic->cryptid);
 			
 			if (realpath(argv[0], rpath) == NULL) {
@@ -207,7 +209,16 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 					_exit(1);
 				}
 			}
-			
+
+			if (off_cryptid) {
+				uint32_t zero=0;
+				off_cryptid+=fileoffs;
+				printf("[+] Setting the LC_ENCRYPTION_INFO->cryptid to 0 at offset %x\n", off_cryptid);
+				if (lseek(outfd, off_cryptid, SEEK_SET) != off_cryptid || write(outfd, &zero, 4) != 4) {
+					printf("[-] Error writing cryptid value\n");
+				}
+			}
+
 			printf("[+] Closing original file\n");
 			close(fd);
 			printf("[+] Closing dump file\n");
@@ -221,4 +232,3 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 	printf("[-] This mach-o file is not encrypted. Nothing was decrypted.\n");
 	_exit(1);
 }
-/* TODO: set the LC_ENCRYPTION_INFO->cryptid to 0 */
