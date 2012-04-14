@@ -52,10 +52,9 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 	struct mach_header *mh;
 	char buffer[1024];
 	char rpath[4096],npath[4096]; /* should be big enough for PATH_MAX */
-	unsigned int fileoffs = 0, restsize;
+	unsigned int fileoffs = 0, off_cryptid = 0, restsize;
 	int i,fd,outfd,r,n,toread;
 	char *tmp;
-	unsigned int off_cryptid=0;
 	
 	printf("mach-o decryption dumper\n\n");
 		
@@ -64,7 +63,7 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 	lc = (struct load_command *)((unsigned char *)pvars->mh + sizeof(struct mach_header));
 		
 	for (i=0; i<pvars->mh->ncmds; i++) {
-		/*printf("Load Command (%d): %08x\n", i, lc->cmd);*/
+		printf("Load Command (%d): %08x @ %p\n", i, lc->cmd, lc);
 		
 		if (lc->cmd == LC_ENCRYPTION_INFO) {
 			eic = (struct encryption_info_command *)lc;
@@ -106,10 +105,6 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 					if ((pvars->mh->cputype == swap32(arch->cputype)) && (pvars->mh->cpusubtype == swap32(arch->cpusubtype))) {
 						fileoffs = swap32(arch->offset);
 						printf("[+] Correct arch is at offset %u in the file\n", fileoffs);
-						if (off_cryptid) {
-							off_cryptid+=fileoffs;
-							printf("[+] Adjusted cryptid offset: %x\n", off_cryptid);
-						}
 						break;
 					}
 					arch++;
@@ -217,6 +212,7 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 
 			if (off_cryptid) {
 				uint32_t zero=0;
+				off_cryptid+=fileoffs;
 				printf("[+] Setting the LC_ENCRYPTION_INFO->cryptid to 0 at offset %x\n", off_cryptid);
 				if (lseek(outfd, off_cryptid, SEEK_SET) != off_cryptid || write(outfd, &zero, 4) != 4) {
 					printf("[-] Error writing cryptid value\n");
