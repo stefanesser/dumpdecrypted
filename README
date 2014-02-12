@@ -1,5 +1,5 @@
 Dumps decrypted iPhone Applications to a file - better solution than those GDB scripts for non working GDB versions
-(C) Copyright 2011 Stefan Esser
+(C) Copyright 2011-2014 Stefan Esser
 
 
 Compile:
