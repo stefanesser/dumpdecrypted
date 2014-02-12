@@ -11,7 +11,7 @@ dumpdecrypted.dylib: dumpdecrypted.o
 	$(GCC_UNIVERSAL) -dynamiclib -o $@ $^
 
 %.o: %.c
-	$(GCC_UNIVERSAL) -dynamiclib -c -o $@ $< 
+	$(GCC_UNIVERSAL) -c -o $@ $< 
 
 clean:
 	rm -f *.o dumpdecrypted.dylib
