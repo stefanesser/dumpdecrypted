@@ -167,7 +167,7 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 			}
 			
 			/* calculate address of beginning of crypted data */
-			n = fileoffs + eic->cryptoff - 0x1000; /* we assume header is normally at 0x1000 */
+			n = fileoffs + eic->cryptoff;
 			
 			restsize = lseek(fd, 0, SEEK_END) - n - eic->cryptsize;			
 			lseek(fd, 0, SEEK_SET);
@@ -192,7 +192,7 @@ void dumptofile(int argc, const char **argv, const char **envp, const char **app
 			
 			/* now write the previously encrypted data */
 			printf("[+] Dumping the decrypted data into the file\n");
-			r = write(outfd, (unsigned char *)pvars->mh + eic->cryptoff - 0x1000, eic->cryptsize);
+			r = write(outfd, (unsigned char *)pvars->mh + eic->cryptoff, eic->cryptsize);
 			if (r != eic->cryptsize) {
 				printf("[-] Error writing file\n");
 				_exit(1);
